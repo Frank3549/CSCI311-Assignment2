@@ -77,7 +77,7 @@ class MultiAgentSearchAgent(Agent):
     all your agents. Do not remove any existing functionality.
     """
 
-    def __init__(self, evalFn=scoreEvaluationFunction, depth=2):
+    def __init__(self, evalFn=scoreEvaluationFunction, depth=1):
         self.index = 0  # Pac-Man is always agent index 0
         self.evaluationFunction = globals()[evalFn] if isinstance(evalFn, str) else evalFn
         self.depth = int(depth)
@@ -115,12 +115,42 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             Things to keep in mind:
                 It's unknown how many ghosts there will be so we will have to account for n ghosts.
+                The height of our tree will be d(n+1) where d is the depth and n is the number of ghosts+1 (pacman)
         """
 
-        legalMoves = gameState.getLegalActions
+        maxHeight = self.depth*(gameState.getNumAgents() + 1)
+        pacmanLegalActions = gameState.getLegalActions(0)
+        bestScore = float("-inf")
+        bestMoves = []
+
+        for move in pacmanLegalActions:
+            successorGameState = gameState.generateSuccessor(0, move)
+            score = self.minimax(successorGameState, 1, 1, maxHeight)
+            if score > bestScore:
+                bestScore = score
+                bestMoves = [move]
+            elif score == bestScore:
+                bestMoves.append(move)
+        
+        return random.choice(bestMoves)
 
 
-        raise NotImplementedError()
+
+            
+    
+    def minimax (self, gameState: GameState, agentIndex: int, height: int, maxHeight: int) -> int:
+        if gameState.isWin() or gameState.isLose() or height >= maxHeight:
+            return self.evaluationFunction(gameState)
+
+        agentGameStates= [gameState.generateSuccessor(agentIndex, move) for move in gameState.getLegalActions(agentIndex)]  
+        
+        if agentIndex == gameState.getNumAgents()-1: #restart the cycle of agents signifies a new depth
+            return max([self.minimax(state, 0, height+1, maxHeight) for state in agentGameStates])
+        elif agentIndex == 0:
+            return max([self.minimax(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
+        else:
+            return min([self.minimax(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
+        
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
