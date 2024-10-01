@@ -77,7 +77,8 @@ class MultiAgentSearchAgent(Agent):
     all your agents. Do not remove any existing functionality.
     """
 
-    def __init__(self, evalFn=scoreEvaluationFunction, depth=1):
+    def __init__(self, evalFn=scoreEvaluationFunction, depth=2):
+        self.i    def __init__(self, evalFn=scoreEvaluationFunction, depth=1):
         self.index = 0  # Pac-Man is always agent index 0
         self.evaluationFunction = globals()[evalFn] if isinstance(evalFn, str) else evalFn
         self.depth = int(depth)
@@ -115,7 +116,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             Things to keep in mind:
                 It's unknown how many ghosts there will be so we will have to account for n ghosts.
-                The height of our tree will be d(n+1) where d is the depth and n is the number of ghosts+1 (pacman)
+                The height of our tree will be d(n+1) where d is the depth and n is the number of ghosts+1 (n)
         """
 
         maxHeight = self.depth*(gameState.getNumAgents() + 1)
@@ -167,18 +168,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         # TODO: Implement your Minimax Agent with alpha-beta pruning
         raise NotImplementedError()
-
-
-class ExpectimaxAgent(MultiAgentSearchAgent):
-    """
-    Expectimax agent
-    """
-
-
-    def getAction(self, gameState):
-        """Return the expectimax action from the current gameState.
-
-        All ghosts should be modeled as choosing uniformly at random from their legal moves.
+l ghosts should be modeled as choosing uniformly at random from their legal moves.
 
         * Use self.depth (depth limit) and self.evaluationFunction.
         * A "terminal" state is when Pac-Man won, Pac-Man lost or there are no legal moves.
