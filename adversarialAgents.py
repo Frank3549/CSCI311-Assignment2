@@ -113,10 +113,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         bestMoves = []
         pacmanIndex = 0 
         ghostStartingIndex = 1
+        startingHeight = 1
         
         for move in pacmanLegalActions:
-            successorGameState = gameState.generateSuccessor(0, move)
-            score = self.minimax(successorGameState, pacmanIndex, ghostStartingIndex, maxHeight)
+            successorGameState = gameState.generateSuccessor(pacmanIndex, move)
+            score = self.minimax(successorGameState, ghostStartingIndex, startingHeight, maxHeight)
             if score > bestScore:
                 bestScore = score
                 bestMoves = [move] 
@@ -163,20 +164,24 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         bestMoves = []
         pacmanIndex = 0 
         ghostStartingIndex = 1
+        startingHeight = 1
+        alpha = int("-inf")
+        beta = int("inf")
 
         for move in pacmanLegalActions:
-            successorGameState = gameState.generateSuccessor(0, move)
-            score = self.AlphaBeta(successorGameState, pacmanIndex, ghostStartingIndex, maxHeight)
+            successorGameState = gameState.generateSuccessor(pacmanIndex, move)
+            score = self.AlphaBeta(successorGameState, ghostStartingIndex, startingHeight, maxHeight, alpha, beta)
             if score > bestScore:
                 bestScore = score
                 bestMoves = [move] 
             elif score == bestScore:
                 bestMoves.append(move) #there might be multiple best moves
 
+
         return random.choice(bestMoves)
 
 
-    def AlphaBeta(self, gameState: GameState, agentIndex: int, height: int, maxHeight: int) -> int:
+    def AlphaBeta(self, gameState: GameState, agentIndex: int, height: int, maxHeight: int, alpha: int, beta: int) -> int:
         """
             Return the best score for the current gameState using minimax with alpha-beta pruning.
 
@@ -186,16 +191,18 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 height (int): Current height of the tree
                 maxHeight (int): Maximum height of the tree
         """
-        if gameState.isWin() or gameState.isLose() or height >= maxHeight:
+
+        if gameState.isWin() or gameState.isLose() or height >= maxHeight or alpha >= beta :
             return self.evaluationFunction(gameState)
 
         agentIndex = agentIndex % gameState.getNumAgents()
-        agentGameStates= [gameState.generateSuccessor(agentIndex, move) for move in gameState.getLegalActions(agentIndex)]  
-        
+        agentGameStates= [gameState.generateSuccessor(agentIndex, move) for move in gameState.getLegalActions(agentIndex)]
+  
+        #only way this can occur is after one complete cycle of agents. 
         if agentIndex == 0:
-            return max([self.AlphaBeta(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
+            return max([self.AlphaBeta(state, agentIndex+1, height+1, maxHeight, alpha, beta) for state in agentGameStates])
         else:
-            return min([self.AlphaBeta(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
+            return min([self.AlphaBeta(state, agentIndex+1, height+1, maxHeight, beta, alpha) for state in agentGameStates])
 
         
         
