@@ -78,7 +78,6 @@ class MultiAgentSearchAgent(Agent):
     """
 
     def __init__(self, evalFn=scoreEvaluationFunction, depth=2):
-        self.i    def __init__(self, evalFn=scoreEvaluationFunction, depth=1):
         self.index = 0  # Pac-Man is always agent index 0
         self.evaluationFunction = globals()[evalFn] if isinstance(evalFn, str) else evalFn
         self.depth = int(depth)
@@ -105,34 +104,26 @@ class MinimaxAgent(MultiAgentSearchAgent):
         isWin(): Return True if GameState is a winning state
         gameState.isLose(): Return True if GameState is a losing state
 
-        Idea: 
-            - Depth limited search DFS with depth limited to 2 moves means we can only calculate our best move based on:
-                - Ghosts optimal move (for themselves)
-                - Pacman's surroundings (food, capsules, ghosts, etc.) to get to a winning state (GOAL)
-            
-                Ultimately we should be picking the best move based on our self.evaluationFunction which will rank the best next moves.
-                We wont necessarily be making those choices ourselves, we only try to better account for those unaccounted variables while taking into account
-                a bit of the future before giving them over to our evaluation function. Which will make the final choice. (we will of course randomly get to choose tie breakers)
-
-            Things to keep in mind:
-                It's unknown how many ghosts there will be so we will have to account for n ghosts.
-                The height of our tree will be d(n+1) where d is the depth and n is the number of ghosts+1 (n)
+        maxHeight is the number of times minimax is called recursively. Depth 1 is equivalent to n+1 maximum calls to minimax where n is the number of agents
         """
 
-        maxHeight = self.depth*(gameState.getNumAgents() + 1)
+        maxHeight = self.depth*gameState.getNumAgents()
         pacmanLegalActions = gameState.getLegalActions(0)
         bestScore = float("-inf")
         bestMoves = []
-
+        pacmanIndex = 0 
+        ghostStartingIndex = 1
+        startingHeight = 1
+        
         for move in pacmanLegalActions:
-            successorGameState = gameState.generateSuccessor(0, move)
-            score = self.minimax(successorGameState, 1, 1, maxHeight)
+            successorGameState = gameState.generateSuccessor(pacmanIndex, move)
+            score = self.minimax(successorGameState, ghostStartingIndex, startingHeight, maxHeight)
             if score > bestScore:
                 bestScore = score
-                bestMoves = [move]
+                bestMoves = [move] 
             elif score == bestScore:
-                bestMoves.append(move)
-        
+                bestMoves.append(move) #there might be multiple best moves
+
         return random.choice(bestMoves)
 
 
@@ -143,11 +134,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if gameState.isWin() or gameState.isLose() or height >= maxHeight:
             return self.evaluationFunction(gameState)
 
+        agentIndex = agentIndex % gameState.getNumAgents()
         agentGameStates= [gameState.generateSuccessor(agentIndex, move) for move in gameState.getLegalActions(agentIndex)]  
         
-        if agentIndex == gameState.getNumAgents()-1: #restart the cycle of agents signifies a new depth
-            return max([self.minimax(state, 0, height+1, maxHeight) for state in agentGameStates])
-        elif agentIndex == 0:
+        if agentIndex == 0:
             return max([self.minimax(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
         else:
             return min([self.minimax(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
@@ -163,12 +153,80 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     def getAction(self, gameState: GameState) -> str:
         """Return the minimax action with alpha-beta pruning from the current gameState.
 
-        * Use self.depth (depth limit) and self.evaluationFunction.
-        * A "terminal" state is when Pac-Man won, Pac-Man lost or there are no legal moves.
+        Args:
+            gameState (GameState): Current game state
         """
-        # TODO: Implement your Minimax Agent with alpha-beta pruning
-        raise NotImplementedError()
-l ghosts should be modeled as choosing uniformly at random from their legal moves.
+            
+            
+        maxHeight = self.depth*gameState.getNumAgents()
+        pacmanLegalActions = gameState.getLegalActions(0)
+        bestScore = float("-inf")
+        bestMoves = []
+        pacmanIndex = 0 
+        ghostStartingIndex = 1
+        startingHeight = 1
+        alpha = float("-inf")
+        beta = float("inf")
+
+        for move in pacmanLegalActions:
+            successorGameState = gameState.generateSuccessor(pacmanIndex, move)
+            score = self.AlphaBeta(successorGameState, ghostStartingIndex, startingHeight, maxHeight, alpha, beta)
+            if score > bestScore:
+                bestScore = score
+                bestMoves = [move] 
+            elif score == bestScore:
+                bestMoves.append(move) #there might be multiple best moves
+
+
+        return random.choice(bestMoves)
+
+
+    def AlphaBeta(self, gameState: GameState, agentIndex: int, height: int, maxHeight: int, alpha: float, beta: float) -> int:
+        """Return the best score for the current gameState using minimax with alpha-beta pruning."""
+
+        if gameState.isWin() or gameState.isLose() or height >= maxHeight:
+            return self.evaluationFunction(gameState)
+
+        agentIndex = agentIndex % gameState.getNumAgents()
+
+        if agentIndex == 0:  # Pac-Man (Maximizing player)
+            value = float("-inf")
+            for move in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, move)
+                value = max(value, self.AlphaBeta(successorState, agentIndex + 1, height + 1, maxHeight, alpha, beta))
+                
+                # Pruning Step
+                if value >= beta:
+                    return value 
+                alpha = max(alpha, value)
+            return value
+
+        else:  # Ghosts (Minimizing player)
+            value = float("inf")
+            for move in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, move)
+                value = min(value, self.AlphaBeta(successorState, agentIndex + 1, height + 1, maxHeight, alpha, beta))
+
+                # Pruning Step
+                if value <= alpha:
+                    return value
+                beta = min(beta, value)
+            return value
+        
+        
+
+
+
+class ExpectimaxAgent(MultiAgentSearchAgent):
+    """
+    Expectimax agent
+    """
+
+
+    def getAction(self, gameState):
+        """Return the expectimax action from the current gameState.
+
+        All ghosts should be modeled as choosing uniformly at random from their legal moves.
 
         * Use self.depth (depth limit) and self.evaluationFunction.
         * A "terminal" state is when Pac-Man won, Pac-Man lost or there are no legal moves.
