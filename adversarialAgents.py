@@ -195,9 +195,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 successorState = gameState.generateSuccessor(agentIndex, move)
                 value = max(value, self.AlphaBeta(successorState, agentIndex + 1, height + 1, maxHeight, alpha, beta))
                 
-                # Update alpha and check for pruning
+                # Pruning Step
                 if value >= beta:
-                    return value  # Beta cutoff
+                    return value 
                 alpha = max(alpha, value)
             return value
 
@@ -207,9 +207,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 successorState = gameState.generateSuccessor(agentIndex, move)
                 value = min(value, self.AlphaBeta(successorState, agentIndex + 1, height + 1, maxHeight, alpha, beta))
 
-                # Update beta and check for pruning
+                # Pruning Step
                 if value <= alpha:
-                    return value  # Alpha cutoff
+                    return value
                 beta = min(beta, value)
             return value
         
