@@ -165,8 +165,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         pacmanIndex = 0 
         ghostStartingIndex = 1
         startingHeight = 1
-        alpha = int("-inf")
-        beta = int("inf")
+        alpha = float("-inf")
+        beta = float("inf")
+
+        print("initial alphaBeta call value $d", self.AlphaBeta(gameState, pacmanIndex, 0, maxHeight, alpha, beta))
 
         for move in pacmanLegalActions:
             successorGameState = gameState.generateSuccessor(pacmanIndex, move)
@@ -181,29 +183,37 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return random.choice(bestMoves)
 
 
-    def AlphaBeta(self, gameState: GameState, agentIndex: int, height: int, maxHeight: int, alpha: int, beta: int) -> int:
-        """
-            Return the best score for the current gameState using minimax with alpha-beta pruning.
+    def AlphaBeta(self, gameState: GameState, agentIndex: int, height: int, maxHeight: int, alpha: float, beta: float) -> int:
+        """Return the best score for the current gameState using minimax with alpha-beta pruning."""
 
-            Args:
-                gameState (GameState): Current game state
-                agentIndex (int): Index of the current agent
-                height (int): Current height of the tree
-                maxHeight (int): Maximum height of the tree
-        """
-
-        if gameState.isWin() or gameState.isLose() or height >= maxHeight or alpha >= beta :
+        if gameState.isWin() or gameState.isLose() or height >= maxHeight:
             return self.evaluationFunction(gameState)
 
         agentIndex = agentIndex % gameState.getNumAgents()
-        agentGameStates= [gameState.generateSuccessor(agentIndex, move) for move in gameState.getLegalActions(agentIndex)]
-  
-        #only way this can occur is after one complete cycle of agents. 
-        if agentIndex == 0:
-            return max([self.AlphaBeta(state, agentIndex+1, height+1, maxHeight, alpha, beta) for state in agentGameStates])
-        else:
-            return min([self.AlphaBeta(state, agentIndex+1, height+1, maxHeight, beta, alpha) for state in agentGameStates])
 
+        if agentIndex == 0:  # Pac-Man (Maximizing player)
+            value = float("-inf")
+            for move in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, move)
+                value = max(value, self.AlphaBeta(successorState, agentIndex + 1, height + 1, maxHeight, alpha, beta))
+                
+                # Update alpha and check for pruning
+                if value >= beta:
+                    return value  # Beta cutoff
+                alpha = max(alpha, value)
+            return value
+
+        else:  # Ghosts (Minimizing player)
+            value = float("inf")
+            for move in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, move)
+                value = min(value, self.AlphaBeta(successorState, agentIndex + 1, height + 1, maxHeight, alpha, beta))
+
+                # Update beta and check for pruning
+                if value <= alpha:
+                    return value  # Alpha cutoff
+                beta = min(beta, value)
+            return value
         
         
 
