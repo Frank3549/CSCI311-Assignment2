@@ -168,8 +168,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float("-inf")
         beta = float("inf")
 
-        print("initial alphaBeta call value $d", self.AlphaBeta(gameState, pacmanIndex, 0, maxHeight, alpha, beta))
-
         for move in pacmanLegalActions:
             successorGameState = gameState.generateSuccessor(pacmanIndex, move)
             score = self.AlphaBeta(successorGameState, ghostStartingIndex, startingHeight, maxHeight, alpha, beta)
