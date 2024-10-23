@@ -174,6 +174,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if score > bestScore:
                 bestScore = score
                 bestMoves = [move] 
+                alpha = score #update alpha
             elif score == bestScore:
                 bestMoves.append(move) #there might be multiple best moves
 
