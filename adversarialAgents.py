@@ -284,9 +284,18 @@ def betterEvaluationFunction(gameState: GameState) -> float:
     gameState.getGhostStates() # List of ghost states, including if current scared (via scaredTimer)
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
     """
+    capsuleLocations = gameState.getCapsules()
+    pacmanPosition = gameState.getPacmanPosition()
 
-    # TODO: Implement your evaluation function
-    raise Exception("Not implemented yet")
+    # weight pacman being closer to the capsules as a higher priority.
+    # Reasoning: Pacman should prioritize eating capsules to make the ghosts vulnerable and therefore waste less time running away from them.
+    distanceToCapsule = [util.manhattanDistance(pacmanPosition, capsule) for capsule in capsuleLocations]
+    closestCapsule = min(distanceToCapsule) if distanceToCapsule else 0
+
+    # if there are no capsules, avoid giving other gamestates a higher score by having more capsules.
+    capsuleScore = 1.0 / (closestCapsule + 1) if closestCapsule != 0 else 0
+
+    return gameState.getScore() + capsuleScore
 
 
 # Create short name for custom evaluation function
