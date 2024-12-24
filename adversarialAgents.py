@@ -5,7 +5,7 @@ Full Name: Frank Bautista
 
 Brief description of my evaluation function:
 
-TODO Briefly describe your evaluation function and why it improves the win rate
+Reasoning: Pacman should prioritize eating capsules to make the ghosts vulnerable and therefore waste less time running away from them.
 """
 
 import math, random, typing
@@ -288,7 +288,6 @@ def betterEvaluationFunction(gameState: GameState) -> float:
     pacmanPosition = gameState.getPacmanPosition()
 
     # weight pacman being closer to the capsules as a higher priority.
-    # Reasoning: Pacman should prioritize eating capsules to make the ghosts vulnerable and therefore waste less time running away from them.
     distanceToCapsule = [util.manhattanDistance(pacmanPosition, capsule) for capsule in capsuleLocations]
     closestCapsule = min(distanceToCapsule) if distanceToCapsule else 0
 
