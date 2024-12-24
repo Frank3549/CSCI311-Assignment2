@@ -5,7 +5,7 @@ Full Name: Frank Bautista
 
 Brief description of my evaluation function:
 
-TODO Briefly describe your evaluation function and why it improves the win rate
+Reasoning: Pacman should prioritize eating capsules to make the ghosts vulnerable and therefore waste less time running away from them.
 """
 
 import math, random, typing
@@ -174,6 +174,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if score > bestScore:
                 bestScore = score
                 bestMoves = [move] 
+                alpha = score 
             elif score == bestScore:
                 bestMoves.append(move) #there might be multiple best moves
 
@@ -223,7 +224,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
 
 
-    def getAction(self, gameState):
+    def getAction(self, gameState: GameState) -> str:
         """Return the expectimax action from the current gameState.
 
         All ghosts should be modeled as choosing uniformly at random from their legal moves.
@@ -231,8 +232,39 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         * Use self.depth (depth limit) and self.evaluationFunction.
         * A "terminal" state is when Pac-Man won, Pac-Man lost or there are no legal moves.
         """
-        # TODO: Implement your Expectimax Agent
-        raise NotImplementedError()
+
+        maxHeight = self.depth*gameState.getNumAgents()
+        pacmanLegalActions = gameState.getLegalActions(0)
+        bestScore = float("-inf")
+        bestMoves = []
+        pacmanIndex = 0 
+        ghostStartingIndex = 1
+        startingHeight = 1
+        
+        for move in pacmanLegalActions:
+            successorGameState = gameState.generateSuccessor(pacmanIndex, move)
+            score = self.expectimax(successorGameState, ghostStartingIndex, startingHeight, maxHeight)
+            if score > bestScore:
+                bestScore = score
+                bestMoves = [move] 
+            elif score == bestScore:
+                bestMoves.append(move) #there might be multiple best moves
+
+        return random.choice(bestMoves)
+    
+    
+    def expectimax (self, gameState: GameState, agentIndex: int, height: int, maxHeight: int) -> int:
+        if gameState.isWin() or gameState.isLose() or height >= maxHeight:
+            return self.evaluationFunction(gameState)
+
+        agentIndex = agentIndex % gameState.getNumAgents()
+        agentGameStates= [gameState.generateSuccessor(agentIndex, move) for move in gameState.getLegalActions(agentIndex)]  
+        
+        if agentIndex == 0:
+            return max([self.expectimax(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])
+        else:
+            return sum([self.expectimax(state, agentIndex+1, height+1, maxHeight) for state in agentGameStates])/len(agentGameStates)
+        
 
 
 def betterEvaluationFunction(gameState: GameState) -> float:
@@ -252,9 +284,17 @@ def betterEvaluationFunction(gameState: GameState) -> float:
     gameState.getGhostStates() # List of ghost states, including if current scared (via scaredTimer)
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
     """
+    capsuleLocations = gameState.getCapsules()
+    pacmanPosition = gameState.getPacmanPosition()
 
-    # TODO: Implement your evaluation function
-    raise Exception("Not implemented yet")
+    # weight pacman being closer to the capsules as a higher priority.
+    distanceToCapsule = [util.manhattanDistance(pacmanPosition, capsule) for capsule in capsuleLocations]
+    closestCapsule = min(distanceToCapsule) if distanceToCapsule else 0
+
+    # if there are no capsules, avoid giving other gamestates a higher score by having more capsules.
+    capsuleScore = 1.0 / (closestCapsule + 1) if closestCapsule != 0 else 0
+
+    return gameState.getScore() + capsuleScore
 
 
 # Create short name for custom evaluation function

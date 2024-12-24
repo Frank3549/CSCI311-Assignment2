@@ -1,9 +1,6 @@
-# CS311 Programming Assignment 2: Adversarial Search
-
-For this assignment, you will be implementing minimax and expectimax agents to play Pac-Man. Refer to the Canvas assignment for assignment specifications. This README describes how to run the skeleton code.
+# Pacman - Adversarial Search
 
 ## Running PacMan
-
 Run the Pac-Man game with `pacman.py`. By default it opens a graphical window so you can play/watch. Relevant commands for each part are described in the Canvas assignment. Use a `-h` option to see the available command-line options, but you won't need to use most of these.
 
 ```
@@ -58,7 +55,7 @@ Options:
 
 ## Unit testing
 
-To assist you during development, a unit test suite is provided in `adversarial_test.py`. These tests are a subset of the tests run by Gradescope, and are primarily intended to catch timeouts before submission. You can run the tests by executing the `adversarial_test.py` file as a program, e.g. `python3 adversarial_test.py`
+A unit test suite is provided in `adversarial_test.py`. You can run the tests by executing the `adversarial_test.py` file as a program, e.g. `python3 adversarial_test.py`
 
 ```
 $ python3 adversarial_test.py
@@ -75,4 +72,4 @@ See http://inst.eecs.berkeley.edu/~cs188 for more information.
 
 ## Credits
 
-This assignment was adapted from the Berkeley CS188 AI projects implemented by John DeNero (denero@cs.berkeley.edu), Dan Klein (klein@cs.berkeley.edu) and others.
+Adapted from the Berkeley CS188 AI projects implemented by John DeNero (denero@cs.berkeley.edu), Dan Klein (klein@cs.berkeley.edu) and others.
